@@ -1,28 +1,27 @@
 #include <algorithm>
 #include <deque>
 #include <iostream>
-#include <set>
 #include <stack>
 #include <vector>
 
 using namespace std;
-const long long kINF = 1e18 + 1;
-const long long kMod = 1 << 30;
-vector<long long> heap;
-long long heap_size = 0;
+const int kINF = 1e18 + 1;
+const int kMod = 1 << 30;
+vector<int> heap;
+int heap_size = 0;
 
-void HeapSwap(long long idx1, long long idx2) { swap(heap[idx1], heap[idx2]); }
+void HeapSwap(int idx1, int idx2) { swap(heap[idx1], heap[idx2]); }
 
-void SiftUp(long long idx) {
+void SiftUp(int idx) {
   if (idx != 1 && heap[idx] > heap[idx / 2]) {
     HeapSwap(idx, idx / 2);
     SiftUp(idx / 2);
   }
 }
 
-void SiftDown(long long idx) {
-  long long ll = idx * 2;
-  long long rr = idx * 2 + 1;
+void SiftDown(int idx) {
+  int ll = idx * 2;
+  int rr = idx * 2 + 1;
   if (ll == heap_size) {
     if (heap[idx] < heap[ll]) {
       HeapSwap(idx, ll);
@@ -56,8 +55,8 @@ void ExtractMax() {
 int main() {
   cin.tie(nullptr);
   std::ios_base::sync_with_stdio(false);
-  long long nn;
-  long long kk;
+  int nn;
+  int kk;
   cin >> nn;
   cin >> kk;
   int ai;
@@ -67,14 +66,14 @@ int main() {
   cin >> xx;
   cin >> yy;
   heap.resize(kk + 1, kINF);
-  for (long long i = 0; i < nn; i++) {
+  for (int i = 0; i < nn; i++) {
     ai = (xx * ai + yy) % (kMod);
     Insert(ai);
     if (heap_size == kk + 1) {
       ExtractMax();
     }
   }
-  vector<long long> ans;
+  vector<int> ans;
   for (int i = 0; i < kk; i++) {
     ans.push_back(heap[1]);
     ExtractMax();

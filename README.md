@@ -5,7 +5,7 @@
 #include <vector>
 
 using namespace std;
-const int kINF = 1e18 + 1;
+const int kINF = 1e9 + 1;
 const int kMod = 1 << 30;
 vector<int> heap;
 int heap_size = 0;
@@ -60,12 +60,12 @@ int main() {
   cin >> nn;
   cin >> kk;
   int ai;
-  int xx;
-  int yy;
+  long long xx;
+  long long yy;
   cin >> ai;
   cin >> xx;
   cin >> yy;
-  heap.resize(kk + 1, kINF);
+  heap.resize(kk + 2, kINF);
   for (int i = 0; i < nn; i++) {
     ai = (xx * ai + yy) % (kMod);
     Insert(ai);

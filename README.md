@@ -1,85 +1,75 @@
-#include <algorithm>
-#include <deque>
 #include <iostream>
-#include <stack>
-#include <vector>
 
-using namespace std;
-const int kINF = 1e9 + 1;
-const int kMod = 1 << 30;
-vector<int> heap;
-int heap_size = 0;
+using std::cin;
+using std::cout;
 
-void HeapSwap(int idx1, int idx2) { swap(heap[idx1], heap[idx2]); }
-
-void SiftUp(int idx) {
-  if (idx != 1 && heap[idx] > heap[idx / 2]) {
-    HeapSwap(idx, idx / 2);
-    SiftUp(idx / 2);
-  }
-}
-
-void SiftDown(int idx) {
-  int ll = idx * 2;
-  int rr = idx * 2 + 1;
-  if (ll == heap_size) {
-    if (heap[idx] < heap[ll]) {
-      HeapSwap(idx, ll);
-      SiftDown(ll);
-    }
-    return;
-  }
-  if (ll < heap_size) {
-    if (heap[ll] < heap[rr]) {
-      swap(ll, rr);
-    }
-    if (heap[idx] < heap[ll]) {
-      HeapSwap(idx, ll);
-      SiftDown(ll);
+int ch_to_int(char x) {
+  char nums[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+  for (int i = 0; i < 10; i++) {
+    if (x == nums[i]) {
+      return i;
     }
   }
+  return -1;
 }
 
-void Insert(int element) {
-  ++heap_size;
-  heap[heap_size] = element;
-  SiftUp(heap_size);
-}
+int argc;
+int *idxs;
+int *pref_sums;
+int *inp;
+int *arrays;
 
-void ExtractMax() {
-  HeapSwap(1, heap_size);
-  heap_size--;
-  SiftDown(1);
+long long mult_of_all(int t){
+  if (t == argc) {
+    return 1;
+  }
+  long long ans = 0;
+  for (int i = 0; i < inp[t]; i++) {
+    bool fl = 1;
+    for (int j = 0; j < t; j++) {
+      if (idxs[j] == i) {
+        fl = 0;
+      }
+    }
+    if (fl) {
+      idxs[t] = i;
+      ans += mult_of_all(t + 1) * arrays[pref_sums[t] + i];
+    }
+  }
+  return ans;
 }
 
 int main() {
-  cin.tie(nullptr);
-  std::ios_base::sync_with_stdio(false);
-  int nn;
-  int kk;
-  cin >> nn;
-  cin >> kk;
-  int ai;
-  long long xx;
-  long long yy;
-  cin >> ai;
-  cin >> xx;
-  cin >> yy;
-  heap.resize(kk + 2, kINF);
-  for (int i = 0; i < nn; i++) {
-    ai = (xx * ai + yy) % (kMod);
-    Insert(ai);
-    if (heap_size == kk + 1) {
-      ExtractMax();
+  int arg_c;
+  cin >> arg_c;
+  char* argv = new char[arg_c];
+  for(int i = 0;i < arg_c; i++){
+    cin >> (argv[i]);
+  }
+  argc = arg_c - 1;
+  int sum = 0;
+  int mult = 1;
+  pref_sums = new int[argc];
+  inp = new int[argc];
+  for (int i = 1; i <= argc; i++) {
+    //inp[i - 1] = ch_to_int(*argv[i]);
+    inp[i - 1] = ch_to_int(argv[i]);
+  }
+  for (int i = 0; i < argc; i++) {
+    sum += inp[i];
+    mult *= inp[i];
+    if (i == 0) {
+      pref_sums[i] = 0;
+    } else {
+      pref_sums[i] = pref_sums[i - 1] + inp[i - 1];
     }
   }
-  vector<int> ans;
-  for (int i = 0; i < kk; i++) {
-    ans.push_back(heap[1]);
-    ExtractMax();
+  arrays = new int[sum];
+  for (int i = 0; i < argc; i++) {
+    for (int j = 0; j < inp[i]; j++) {
+      cin >> arrays[pref_sums[i] + j];
+    }
   }
-  for (int i = kk - 1; i >= 0; i--) {
-    cout << ans[i] << " ";
-  }
-  cout << '\n';
+  idxs = new int[argc];
+  cout << mult_of_all(0);
 }

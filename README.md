@@ -36,8 +36,10 @@ void Push(char* element) {
   if (im_size == rl_size) {
     Resize();
   }
-  dt_size++;
   storage[im_size++] = Copy(element, 256);
+  if(im_size > dt_size){
+    dt_size++;
+  }
 }
 
 void Initialize() {
@@ -60,6 +62,13 @@ void Pop() {
     cout << storage[--im_size] << '\n';
   }
 }
+void Back(){
+  if (im_size == 0) {
+    cout << "error" << '\n';
+  } else {
+    cout << storage[im_size - 1] << '\n';
+  }
+}
 
 int main() {
   Initialize();
@@ -78,7 +87,7 @@ int main() {
         }
         break;
       case 'b':
-        cout << storage[im_size - 1] << '\n';
+        Back();
         break;
       case 's':
         cout << im_size << '\n';

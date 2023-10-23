@@ -26,7 +26,7 @@ void Resize() {
   rl_size *= 2;
   char** storage_cpy = new char*[rl_size];
   for (int i = 0; i < im_size; i++) {
-    storage_cpy[i] = storage[i];
+    storage_cpy[i] = Copy(storage[i], 256);
   }
   Delete(dt_size);
   storage = storage_cpy;

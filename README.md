@@ -4,9 +4,10 @@ using std::cin;
 using std::cout;
 char** storage;
 int rl_size = 4;
+int dt_size = 0;
 int im_size = 0;
 
-void Delete(int size){
+void Delete(int size) {
   for (int i = 0; i < size; i++) {
     delete[] storage[i];
   }
@@ -27,7 +28,7 @@ void Resize() {
   for (int i = 0; i < im_size; i++) {
     storage_cpy[i] = storage[i];
   }
-  Delete(im_size);
+  Delete(dt_size);
   storage = storage_cpy;
 }
 
@@ -35,17 +36,19 @@ void Push(char* element) {
   if (im_size == rl_size) {
     Resize();
   }
+  dt_size++;
   storage[im_size++] = Copy(element, 256);
 }
 
 void Initialize() {
+  dt_size = 0;
   im_size = 0;
   rl_size = 4;
   storage = new char*[4];
 }
 
 void Clear() {
-  Delete(im_size);
+  Delete(dt_size);
   Initialize();
   cout << "ok" << '\n';
 }
@@ -86,6 +89,6 @@ int main() {
     }
     cin >> inp;
   }
-  Delete(im_size);
+  Delete(dt_size);
   cout << "bye";
 }

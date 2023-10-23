@@ -6,6 +6,12 @@ char** storage;
 int rl_size = 4;
 int im_size = 0;
 
+void Delete(int size){
+  for (int i = 0; i < size; i++) {
+    delete[] storage[i];
+  }
+}
+
 char* Copy(const char* string, int size) {
   char* s_copy = new char[size];
   for (int i = 0; i < size; i++) {
@@ -20,7 +26,7 @@ void Resize() {
   for (int i = 0; i < im_size; i++) {
     storage_cpy[i] = storage[i];
   }
-  delete[] storage;
+  Delete(im_size);
   storage = storage_cpy;
 }
 
@@ -40,7 +46,6 @@ void Initialize() {
   e[2] = 'z';
   e[3] = ' ';
   storage = new char*[4];
-  storage[0] = Copy(e, 256);
   storage[1] = Copy(e, 256);
   storage[2] = Copy(e, 256);
   storage[3] = Copy(e, 256);
@@ -48,7 +53,7 @@ void Initialize() {
 }
 
 void Clear() {
-  delete[] storage;
+  Delete(rl_size);
   Initialize();
   cout << "ok" << '\n';
 }
@@ -89,6 +94,6 @@ int main() {
     }
     cin >> inp;
   }
-  Clear();
+  Delete(rl_size);
   cout << "bye";
 }

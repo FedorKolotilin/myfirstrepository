@@ -10,6 +10,7 @@ void Delete(int size){
   for (int i = 0; i < size; i++) {
     delete[] storage[i];
   }
+  delete[] storage;
 }
 
 char* Copy(const char* string, int size) {
@@ -40,20 +41,11 @@ void Push(char* element) {
 void Initialize() {
   im_size = 0;
   rl_size = 4;
-  char* e = new char[256];
-  e[0] = 'x';
-  e[1] = 'y';
-  e[2] = 'z';
-  e[3] = ' ';
   storage = new char*[4];
-  storage[1] = Copy(e, 256);
-  storage[2] = Copy(e, 256);
-  storage[3] = Copy(e, 256);
-  delete[] e;
 }
 
 void Clear() {
-  Delete(rl_size);
+  Delete(im_size);
   Initialize();
   cout << "ok" << '\n';
 }
@@ -94,6 +86,6 @@ int main() {
     }
     cin >> inp;
   }
-  Delete(rl_size);
+  Delete(im_size);
   cout << "bye";
 }

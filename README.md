@@ -17,7 +17,7 @@ struct MyHeap {
 
   MyHeap(bool (*compare)(long long, long long)) : compare(compare) {
     heap.assign(kLEN + 1, {(compare(kINF, -kINF) ? -kINF : kINF), 0});
-    q_info.assign(2 * kLEN + 1, 0);
+    q_info.assign(2 * kLEN + 1, -1);
   }
 
   void HeapSwap(long long idx1, long long idx2) {
@@ -132,15 +132,35 @@ struct MinMaxHeap {
     max_heap.heap[max_heap.q_info[key]].first += value;
     max_heap.SiftDown(max_heap.q_info[key]);
   }
+  void Print(){
+    for(int i = 1; i <= GetSize(); i++){
+      cout << "{" << min_heap.heap[i].first << " " << min_heap.heap[i].second << "}" << "  "; 
+    }
+    cout << '\n';
+    for(int i = 1; i <= GetSize(); i++){
+      cout << "{" << max_heap.heap[i].first << " " << max_heap.heap[i].second << "}" << "  "; 
+    }
+    cout << '\n';
+    cout << '\n';
+  }
+  int GetIdx(long long key){
+    return min_heap.q_info[key];
+  }
 };
+
+
+
+
+
 
 int main() {
   long long ll;
   int nn;
-  int kk;
+  long long kk;
   cin >> ll;
   cin >> nn;
   cin >> kk;
+  kk = ll / kk;
   vector<int> inp(nn);
   vector<long long> segm(nn);
   vector<vector<int>> steps(kk);
@@ -156,41 +176,62 @@ int main() {
     steps[ost].push_back(i);
     segm[i] = inp[i] / kk;
   }
+      
   MinMaxHeap minMaxHeap;
-  minMaxHeap.Insert(segm[0], 0);
-  key[0] = 0;
+  minMaxHeap.Insert(1, 1);
+  key[0] = 1;
+  int last_key = 1;
   for (int i = 1; i < nn; i++) {
-    int last_key = 0;
-    if (segm[i] != segm[i - 1]) {
-      last_key = i * 2;
-      minMaxHeap.Insert(segm[i], last_key);
-    } else {
-      minMaxHeap.IncreaseKey(last_key, 1);
+    if (segm[i] == segm[i - 1] + 1) {
+      last_key += 1; 
+      cout << last_key << " ";
+      minMaxHeap.Insert(1, last_key);
+      key[i] = last_key;
+      continue;
+    } 
+    if (segm[i] > segm[i - 1] + 1) {
+      cout << last_key << " ";
+      last_key += 1;
+      minMaxHeap.Insert(0, last_key);
+      last_key += 1;
+      minMaxHeap.Insert(110, last_key);
+      key[i] = last_key;
+      continue;
     }
-    key[i] = last_key;
+    cout << last_key << " ";
+    minMaxHeap.IncreaseKey(last_key, 1);
   }
+  int maxKey;
+  if(segm[nn - 1] == (ll / kk) - 1){
+    maxKey = key[nn - 1];
+  } else {
+    maxKey = minMaxHeap.min_heap.q_info.size() - 1;
+    minMaxHeap.Insert(0, maxKey);
+  }
+  
+  
   for (int i = 0; i < kk; i++) {
     ans[i] = minMaxHeap.GetMax() - minMaxHeap.GetMin();
-    for (auto j = 0u; i < steps[i].size(); j++) {
+    minMaxHeap.Print();
+    for (auto j = 0u; j < steps[i].size(); j++) {
       int idx = steps[i][j];
       minMaxHeap.DecreaseKey(key[idx], 1);
-      segm[idx] = (ll / kk + segm[idx] - 1) % (ll / kk);
       if (idx == 0) {
-        if (segm[nn - 1] == segm[0]){
-          key[0] = key[nn-1];
-        } else {
-          key[idx] -= 1;
-        }
+        key[idx] = maxKey;
+      }
+      else{
+        key[idx] -= 1;
       }
       minMaxHeap.IncreaseKey(key[idx], 1);
+      segm[idx] = (ll / kk + segm[idx] - 1) % (ll / kk);
     }
   }
-  int cnt = 0;
+  int cnt = 1;
   int mv = 0;
-  for(int i = 0; i < kk; i++){
+  for(int i = 1; i < kk; i++){
     if(ans[i] < ans[mv]){
       cnt = 1;
-      mv = ans[i];
+      mv = i;
       continue;
     }
     if(ans[i] == mv){
@@ -198,5 +239,5 @@ int main() {
     }
   }
   cout << ans[mv] << " " << cnt * (ll/kk) << '\n';
-  cout << mv;
+  cout << mv + 1;
 }

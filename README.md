@@ -144,7 +144,7 @@ struct BinHeap {
       elements[roots[i]]->heap_idx = heap_idx;
       elements[roots[i]]->heap_root_idx = i;
     }
-    heap.Cleer();
+    heap.Clear();
   }
 
   void Insert(int val, int idx) {
@@ -156,9 +156,12 @@ struct BinHeap {
   }
 
   int GetI() {
-    int idx = 0;
+    int idx = -1;
     unsigned num = 0U;
     while (num < roots.size()) {
+      if (idx == -1) {
+        idx = 0;
+      }
       if (Tree::Compare(elements[roots[num]], elements[roots[idx]])) {
         idx = num;
       }
@@ -168,8 +171,6 @@ struct BinHeap {
   }
 
   int GetV() { return elements[roots[GetI()]]->root_value; }
-
-  void Cleer() { roots.clear(); }
 
   void Extract() {
     BinHeap bin_heap;
@@ -182,6 +183,8 @@ struct BinHeap {
     Merge(bin_heap);
   }
 
+  void Clear() { roots.clear(); }
+
   void Print() {
     int ii = 0;
     for (auto tree : roots) {
@@ -193,27 +196,17 @@ struct BinHeap {
   }
 };
 
-vector<BinHeap*> heaps;
-
-void Delete(int element_idx) {
-  elements[element_idx]->root_value = 0;
-  Tree::SiftUp(elements[element_idx]);
-  heaps[elements[element_idx]->heap_idx]
-      ->roots[elements[element_idx]->heap_root_idx] = element_idx;
-  heaps[elements[element_idx]->heap_idx]->Extract();
-}
-
 int main() {
   int nn;
   cin >> nn;
   nn++;
   int mm;
   cin >> mm;
+  vector<BinHeap> heaps(nn);
   Tree empty_tree;
   elements[0] = &empty_tree;
   for (int i = 0; i < nn; i++) {
-    BinHeap* bin_heap = new BinHeap();
-    heaps.push_back(bin_heap);
+    heaps[i].heap_idx = i;
   }
   int add_operation_cnt = 0;
   for (int i = 0; i < mm; i++) {
@@ -228,37 +221,39 @@ int main() {
         add_operation_cnt++;
         cin >> heap_idx;
         cin >> value;
-        heaps[heap_idx]->Insert(value, add_operation_cnt);
+        heaps[heap_idx].Insert(value, add_operation_cnt);
         break;
       case 1:
         cin >> heap_idx;
         cin >> heap2_idx;
-        heaps[heap2_idx]->Merge(*heaps[heap_idx]);
+        heaps[heap2_idx].Merge(heaps[heap_idx]);
         break;
       case 2:
         cin >> element_idx;
-        Delete(element_idx);
+        elements[element_idx]->root_value = 0;
+        Tree::SiftUp(elements[element_idx]);
+        heaps[elements[element_idx]->heap_idx]
+            .roots[elements[element_idx]->heap_root_idx] = element_idx;
+        heaps[elements[element_idx]->heap_idx].Extract();
         break;
       case 3:
         cin >> element_idx;
         cin >> value;
-        Delete(element_idx);
-        heaps[elements[element_idx]->heap_idx]->Insert(value, element_idx);
+        elements[element_idx]->root_value = 0;
+        Tree::SiftUp(elements[element_idx]);
+        heaps[elements[element_idx]->heap_idx]
+            .roots[elements[element_idx]->heap_root_idx] = element_idx;
+        heaps[elements[element_idx]->heap_idx].Extract();
+        heaps[elements[element_idx]->heap_idx].Insert(value, element_idx);
         break;
       case 4:
         cin >> heap_idx;
-        cout << heaps[heap_idx]->GetV() << '\n';
+        cout << heaps[heap_idx].GetV() << '\n';
         break;
       case 5:
         cin >> heap_idx;
-        heaps[heap_idx]->Extract();
+        heaps[heap_idx].Extract();
         break;
     }
-  }
-  for (int i = 1; i < kLEN; i++) {
-    delete elements[i];
-  }
-  for (int i = 0; i < nn; i++) {
-    delete heaps[i];
   }
 }

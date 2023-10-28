@@ -144,7 +144,7 @@ struct BinHeap {
       elements[roots[i]]->heap_idx = heap_idx;
       elements[roots[i]]->heap_root_idx = i;
     }
-    delete (&heap);
+    heap.Cleer();
   }
 
   void Insert(int val, int idx) {
@@ -168,6 +168,8 @@ struct BinHeap {
   }
 
   int GetV() { return elements[roots[GetI()]]->root_value; }
+
+  void Cleer() { roots.clear(); }
 
   void Extract() {
     BinHeap bin_heap;
@@ -256,7 +258,7 @@ int main() {
   for (int i = 1; i < kLEN; i++) {
     delete elements[i];
   }
-  for(int i = 0; i < nn; i++){
+  for (int i = 0; i < nn; i++) {
     delete heaps[i];
   }
 }

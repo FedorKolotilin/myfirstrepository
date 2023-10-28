@@ -43,7 +43,7 @@ struct Tree {
   }
 
   Tree(int root_value, int root_idx, int heap_idx)
-      : root_value(root_value), root_idx(root_idx), heap_idx(heap_idx) {
+       : root_value(root_value), root_idx(root_idx), heap_idx(heap_idx) {
     size = 1;
   }
 
@@ -107,7 +107,7 @@ struct BinHeap {
           roots[idx] = heap.roots[idx];
         } else if (!elements[heap.roots[idx]]->Empty()) {
           previous_level_tree =
-              Tree::Merge(elements[roots[idx]], elements[heap.roots[idx]]);
+               Tree::Merge(elements[roots[idx]], elements[heap.roots[idx]]);
           roots[idx] = 0;
         }
       } else {
@@ -116,7 +116,7 @@ struct BinHeap {
           elements[roots[idx]] = previous_level_tree;
         } else {
           previous_level_tree =
-              Tree::Merge(elements[heap.roots[idx]], previous_level_tree);
+               Tree::Merge(elements[heap.roots[idx]], previous_level_tree);
         }
       }
       idx++;
@@ -126,7 +126,7 @@ struct BinHeap {
         roots.push_back(heap.roots[idx]);
       } else if (heap.roots[idx] != 0) {
         previous_level_tree =
-            Tree::Merge(elements[heap.roots[idx]], previous_level_tree);
+             Tree::Merge(elements[heap.roots[idx]], previous_level_tree);
         roots.push_back(0);
       } else {
         roots.push_back(previous_level_tree->root_idx);
@@ -169,7 +169,7 @@ struct BinHeap {
 
   int GetV() { return elements[roots[GetI()]]->root_value; }
 
-  void Cleer() { roots.clear();}
+  void Cleer() { roots.clear(); }
 
   void Extract() {
     BinHeap bin_heap;
@@ -199,7 +199,7 @@ void Delete(int element_idx) {
   elements[element_idx]->root_value = 0;
   Tree::SiftUp(elements[element_idx]);
   heaps[elements[element_idx]->heap_idx]
-      ->roots[elements[element_idx]->heap_root_idx] = element_idx;
+       ->roots[elements[element_idx]->heap_root_idx] = element_idx;
   heaps[elements[element_idx]->heap_idx]->Extract();
 }
 
@@ -213,6 +213,7 @@ int main() {
   elements[0] = &empty_tree;
   for (int i = 0; i < nn; i++) {
     BinHeap* bin_heap = new BinHeap();
+    bin_heap->heap_idx = i;
     heaps.push_back(bin_heap);
   }
   int add_operation_cnt = 0;

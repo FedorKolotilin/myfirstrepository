@@ -1,243 +1,264 @@
 #include <algorithm>
 #include <deque>
 #include <iostream>
+#include <list>
+#include <map>
 #include <set>
 #include <stack>
 #include <vector>
 
 using namespace std;
-struct MyHeap {
-  const long long kINF = 1e18 + 1;
-  const long long kLEN = 5 * 1e5 + 10;
-  vector<pair<long long, long long>> heap;
-  vector<long long> q_info;
-  long long size = 0;
+const int kINF = (1e9) + 1;
+const int kLEN = (1e6) + 10;
 
-  bool (*compare)(long long p1, long long p2);
+int Log(int value) {
+  int ans = 0;
+  while (value != 1) {
+    value /= 2;
+    ans += 1;
+  }
+  return ans;
+}
 
-  MyHeap(bool (*compare)(long long, long long)) : compare(compare) {
-    heap.assign(kLEN + 1, {(compare(kINF, -kINF) ? -kINF : kINF), 0});
-    q_info.assign(2 * kLEN + 1, -1);
+struct Tree {
+  Tree* parent = nullptr;
+  set<Tree*> child;
+  int size = 0;
+  int root_value = kINF;
+  int root_idx = 0;
+  int heap_idx = 0;
+  int heap_root_idx = 0;
+
+  static void Swap(Tree* tree1, Tree* tree2) {
+    swap(tree1->size, tree2->size);
+    tree1->heap_idx = tree2->heap_idx;
+    tree1->heap_root_idx = tree2->heap_root_idx;
+    set<Tree*> child_copy = tree1->child;
+    tree1->child = tree2->child;
+    tree1->child.insert(tree2);
+    tree1->child.erase(tree1);
+    tree2->child = child_copy;
+    tree1->parent = tree2->parent;
+    tree2->parent = tree1;
   }
 
-  void HeapSwap(long long idx1, long long idx2) {
-    q_info[heap[idx1].second] = idx2;
-    q_info[heap[idx2].second] = idx1;
-    swap(heap[idx1], heap[idx2]);
+  Tree(int root_value, int root_idx, int heap_idx)
+      : root_value(root_value), root_idx(root_idx), heap_idx(heap_idx) {
+    size = 1;
   }
 
-  void SiftUp(long long idx) {
-    if (idx != 1 && compare(heap[idx].first, heap[idx / 2].first)) {
-      HeapSwap(idx, idx / 2);
-      SiftUp(idx / 2);
+  Tree() { size = 0; }
+
+  static bool Compare(Tree* t1, Tree* t2) {
+    return ((t1->root_value < t2->root_value) ||
+            (t1->root_value == t2->root_value && t1->root_idx < t2->root_idx));
+  }
+
+  static Tree* Merge(Tree* tree1, Tree* tree2) {
+    if (Compare(tree1, tree2)) {
+      tree1->child.insert(tree2);
+      tree2->parent = tree1;
+      tree2->heap_idx = tree1->heap_idx;
+      return tree1;
     }
+    tree2->child.insert(tree1);
+    tree1->parent = tree2;
+    tree1->heap_idx = tree2->heap_idx;
+    return tree2;
   }
 
-  void SiftDown(long long idx) {
-    long long ll = idx * 2;
-    long long rr = idx * 2 + 1;
-    if (ll == size) {
-      if (!compare(heap[idx].first, heap[ll].first)) {
-        HeapSwap(idx, ll);
-        SiftDown(ll);
-      }
+  static void SiftUp(Tree* tree) {
+    if (tree->parent == nullptr) {
       return;
     }
-    if (ll < size) {
-      if (compare(heap[rr].first, heap[ll].first)) {
-        swap(ll, rr);
-      }
-      if (!compare(heap[idx].first, heap[ll].first)) {
-        HeapSwap(idx, ll);
-        SiftDown(ll);
-      }
+    if (Compare(tree, tree->parent)) {
+      Swap(tree, tree->parent);
+      SiftUp(tree);
     }
   }
 
-  void Insert(long long value, long long op_idx) {
-    ++size;
-    q_info[op_idx] = size;
-    heap[size] = {value, op_idx};
-    SiftUp(size);
+  bool Empty() const { return size == 0; }
+
+  void Print() {
+    if (Empty()) {
+      cout << "empty";
+      return;
+    }
+    cout << root_value << " ";
+    for (Tree* tree : child) {
+      tree->Print();
+    }
   }
+};
+vector<Tree*> elements(kLEN);
+
+struct BinHeap {
+  int heap_idx;
+  vector<int> roots;
+
+  BinHeap() { heap_idx = kINF; }
+
+  void Merge(BinHeap& heap) {
+    Tree* previous_level_tree = elements[0];
+    unsigned idx = 0U;
+    while (idx < min(roots.size(), heap.roots.size())) {
+      if (previous_level_tree->Empty()) {
+        if (elements[roots[idx]]->Empty()) {
+          roots[idx] = heap.roots[idx];
+        } else if (!elements[heap.roots[idx]]->Empty()) {
+          previous_level_tree =
+              Tree::Merge(elements[roots[idx]], elements[heap.roots[idx]]);
+          roots[idx] = 0;
+        }
+      } else {
+        if (elements[roots[idx]]->Empty() &&
+            elements[heap.roots[idx]]->Empty()) {
+          elements[roots[idx]] = previous_level_tree;
+        } else {
+          previous_level_tree =
+              Tree::Merge(elements[heap.roots[idx]], previous_level_tree);
+        }
+      }
+      idx++;
+    }
+    while (idx < heap.roots.size()) {
+      if (previous_level_tree->Empty()) {
+        roots.push_back(heap.roots[idx]);
+      } else if (heap.roots[idx] != 0) {
+        previous_level_tree =
+            Tree::Merge(elements[heap.roots[idx]], previous_level_tree);
+        roots.push_back(0);
+      } else {
+        roots.push_back(previous_level_tree->root_idx);
+      }
+      idx++;
+    }
+    if (!previous_level_tree->Empty()) {
+      if (idx < roots.size()) {
+        roots[idx] = previous_level_tree->root_idx;
+      } else {
+        roots.push_back(previous_level_tree->root_idx);
+      }
+    }
+    for (unsigned i = 0U; i < roots.size(); i++) {
+      elements[roots[i]]->heap_idx = heap_idx;
+      elements[roots[i]]->heap_root_idx = i;
+    }
+    heap.Clear();
+  }
+
+  void Insert(int val, int idx) {
+    BinHeap bin_heap;
+    Tree* tree = new Tree(val, idx, kINF);
+    elements[idx] = tree;
+    bin_heap.roots.push_back(idx);
+    Merge(bin_heap);
+  }
+
+  int GetI() {
+    int idx = -1;
+    unsigned num = 0U;
+    while (num < roots.size()) {
+      if (idx == -1) {
+        idx = 0;
+      }
+      if (Tree::Compare(elements[roots[num]], elements[roots[idx]])) {
+        idx = num;
+      }
+      num++;
+    }
+    return idx;
+  }
+
+  int GetV() { return elements[roots[GetI()]]->root_value; }
 
   void Extract() {
-    HeapSwap(1, size);
-    size--;
-    SiftDown(1);
-  }
-
-  long long GetMinValue() { return heap[1].first; }
-
-  long long GetMinIdx() { return heap[1].second; }
-
-  void DecreaseKey(long long key, long long value) {
-    heap[q_info[key]].first -= value;
-    SiftUp(q_info[key]);
-  }
-
-  void IncreaseKey(long long key, long long value) {
-    heap[q_info[key]].first += value;
-    SiftDown(q_info[key]);
-  }
-};
-struct MinMaxHeap {
-  static bool (MoreComp)(long long p1, long long p2) { return p1 > p2; }
-
-  static bool (LessComp)(long long p1, long long p2) { return p1 < p2; }
-
-  MyHeap min_heap = MyHeap(LessComp);
-  MyHeap max_heap = MyHeap(MoreComp);
-
-  void Insert(long long element, long long op_idx) {
-    min_heap.Insert(element, op_idx);
-    max_heap.Insert(element, op_idx);
-  }
-
-  void ExtractMax() {
-    long long idx = max_heap.GetMinIdx();
-    max_heap.Extract();
-    min_heap.DecreaseKey(idx, max_heap.kINF);
-    min_heap.Extract();
-  }
-
-  void ExtractMin() {
-    long long idx = min_heap.GetMinIdx();
-    min_heap.Extract();
-    max_heap.DecreaseKey(idx, -max_heap.kINF);
-    max_heap.Extract();
-  }
-
-  long long GetSize() { return min_heap.size; }
-
-  long long GetMin() { return min_heap.GetMinValue(); }
-
-  long long GetMax() { return max_heap.GetMinValue(); }
-
-  void Clear() {
-    max_heap.size = 0;
-    min_heap.size = 0;
-  }
-
-  void DecreaseKey(long long key, long long value) {
-    min_heap.heap[min_heap.q_info[key]].first -= value;
-    min_heap.SiftUp(min_heap.q_info[key]);
-    max_heap.heap[max_heap.q_info[key]].first -= value;
-    max_heap.SiftUp(max_heap.q_info[key]);
-  }
-
-  void IncreaseKey(long long key, long long value) {
-    min_heap.heap[min_heap.q_info[key]].first += value;
-    min_heap.SiftDown(min_heap.q_info[key]);
-    max_heap.heap[max_heap.q_info[key]].first += value;
-    max_heap.SiftDown(max_heap.q_info[key]);
-  }
-  void Print(){
-    for(int i = 1; i <= GetSize(); i++){
-      cout << "{" << min_heap.heap[i].first << " " << min_heap.heap[i].second << "}" << "  "; 
+    BinHeap bin_heap;
+    int idx = GetI();
+    Tree extracting_tree = *elements[roots[idx]];
+    for (Tree* tree : extracting_tree.child) {
+      bin_heap.roots.push_back(tree->root_idx);
     }
-    cout << '\n';
-    for(int i = 1; i <= GetSize(); i++){
-      cout << "{" << max_heap.heap[i].first << " " << max_heap.heap[i].second << "}" << "  "; 
-    }
-    cout << '\n';
-    cout << '\n';
+    roots[idx] = 0;
+    Merge(bin_heap);
   }
-  int GetIdx(long long key){
-    return min_heap.q_info[key];
+
+  void Clear() { roots.clear(); }
+
+  void Print() {
+    int ii = 0;
+    for (auto tree : roots) {
+      cout << "tree " << ii++ << "(" << elements[tree]->size << ")"
+           << ": ";
+      elements[tree]->Print();
+      cout << '\n';
+    }
   }
 };
 
+vector<BinHeap> heaps;
 
-
-
-
+void Delete(int element_idx) {
+  elements[element_idx]->root_value = 0;
+  Tree::SiftUp(elements[element_idx]);
+  heaps[elements[element_idx]->heap_idx]
+      .roots[elements[element_idx]->heap_root_idx] = element_idx;
+  heaps[elements[element_idx]->heap_idx].Extract();
+}
 
 int main() {
-  long long ll;
   int nn;
-  long long kk;
-  cin >> ll;
   cin >> nn;
-  cin >> kk;
-  kk = ll / kk;
-  vector<int> inp(nn);
-  vector<long long> segm(nn);
-  vector<vector<int>> steps(kk);
-  vector<int> ans(kk);
-  vector<int> key(nn);
+  nn++;
+  int mm;
+  cin >> mm;
+  heaps.resize(nn);
+  Tree empty_tree;
+  elements[0] = &empty_tree;
   for (int i = 0; i < nn; i++) {
-    cin >> inp[i];
-    -- inp[i];
+    heaps[i].heap_idx = i;
   }
-  sort(inp.begin(), inp.end());
-  for (int i = 0; i < nn; i++) {
-    int ost = inp[i] % kk;
-    steps[ost].push_back(i);
-    segm[i] = inp[i] / kk;
-  }
-      
-  MinMaxHeap minMaxHeap;
-  minMaxHeap.Insert(1, 1);
-  key[0] = 1;
-  int last_key = 1;
-  for (int i = 1; i < nn; i++) {
-    if (segm[i] == segm[i - 1] + 1) {
-      last_key += 1; 
-      cout << last_key << " ";
-      minMaxHeap.Insert(1, last_key);
-      key[i] = last_key;
-      continue;
-    } 
-    if (segm[i] > segm[i - 1] + 1) {
-      cout << last_key << " ";
-      last_key += 1;
-      minMaxHeap.Insert(0, last_key);
-      last_key += 1;
-      minMaxHeap.Insert(110, last_key);
-      key[i] = last_key;
-      continue;
-    }
-    cout << last_key << " ";
-    minMaxHeap.IncreaseKey(last_key, 1);
-  }
-  int maxKey;
-  if(segm[nn - 1] == (ll / kk) - 1){
-    maxKey = key[nn - 1];
-  } else {
-    maxKey = minMaxHeap.min_heap.q_info.size() - 1;
-    minMaxHeap.Insert(0, maxKey);
-  }
-  
-  
-  for (int i = 0; i < kk; i++) {
-    ans[i] = minMaxHeap.GetMax() - minMaxHeap.GetMin();
-    minMaxHeap.Print();
-    for (auto j = 0u; j < steps[i].size(); j++) {
-      int idx = steps[i][j];
-      minMaxHeap.DecreaseKey(key[idx], 1);
-      if (idx == 0) {
-        key[idx] = maxKey;
-      }
-      else{
-        key[idx] -= 1;
-      }
-      minMaxHeap.IncreaseKey(key[idx], 1);
-      segm[idx] = (ll / kk + segm[idx] - 1) % (ll / kk);
+  int add_operation_cnt = 0;
+  for (int i = 0; i < mm; i++) {
+    int operation;
+    cin >> operation;
+    int heap_idx;
+    int element_idx;
+    int heap2_idx;
+    int value;
+    switch (operation) {
+      case 0:
+        add_operation_cnt++;
+        cin >> heap_idx;
+        cin >> value;
+        heaps[heap_idx].Insert(value, add_operation_cnt);
+        break;
+      case 1:
+        cin >> heap_idx;
+        cin >> heap2_idx;
+        heaps[heap2_idx].Merge(heaps[heap_idx]);
+        break;
+      case 2:
+        cin >> element_idx;
+        Delete(element_idx);
+        break;
+      case 3:
+        cin >> element_idx;
+        cin >> value;
+        Delete(element_idx);
+        heaps[elements[element_idx]->heap_idx].Insert(value, element_idx);
+        break;
+      case 4:
+        cin >> heap_idx;
+        cout << heaps[heap_idx].GetV() << '\n';
+        break;
+      case 5:
+        cin >> heap_idx;
+        heaps[heap_idx].Extract();
+        break;
     }
   }
-  int cnt = 1;
-  int mv = 0;
-  for(int i = 1; i < kk; i++){
-    if(ans[i] < ans[mv]){
-      cnt = 1;
-      mv = i;
-      continue;
-    }
-    if(ans[i] == mv){
-      cnt += 1;
-    }
+  for (int i = 1; i < kLEN; i++) {
+    delete elements[i];
   }
-  cout << ans[mv] << " " << cnt * (ll/kk) << '\n';
-  cout << mv + 1;
 }

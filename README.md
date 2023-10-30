@@ -206,6 +206,51 @@ void Delete(int element_idx) {
   heaps[elements[element_idx]->heap_idx]->Extract();
 }
 
+int add_operation_cnt = 0;
+
+void Read() {
+  int operation;
+  cin >> operation;
+  int heap_idx;
+  int element_idx;
+  int heap2_idx;
+  int value;
+  switch (operation) {
+    case 0:
+      add_operation_cnt++;
+      cin >> heap_idx;
+      cin >> value;
+      heaps[heap_idx]->Insert(value, add_operation_cnt);
+      break;
+    case 1:
+      cin >> heap_idx;
+      cin >> heap2_idx;
+      if (heap_idx == heap2_idx) {
+        break;
+      }
+      heaps[heap2_idx]->Merge(*heaps[heap_idx]);
+      break;
+    case 2:
+      cin >> element_idx;
+      Delete(element_idx);
+      break;
+    case 3:
+      cin >> element_idx;
+      cin >> value;
+      Delete(element_idx);
+      heaps[elements[element_idx]->heap_idx]->Insert(value, element_idx);
+      break;
+    case 4:
+      cin >> heap_idx;
+      cout << heaps[heap_idx]->GetV() << '\n';
+      break;
+    case 5:
+      cin >> heap_idx;
+      heaps[heap_idx]->Extract();
+      break;
+  }
+}
+
 int main() {
   int nn;
   cin >> nn;
@@ -219,45 +264,8 @@ int main() {
     bin_heap->heap_idx = i;
     heaps.push_back(bin_heap);
   }
-  int add_operation_cnt = 0;
   for (int i = 0; i < mm; i++) {
-    int operation;
-    cin >> operation;
-    int heap_idx;
-    int element_idx;
-    int heap2_idx;
-    int value;
-    switch (operation) {
-      case 0:
-        add_operation_cnt++;
-        cin >> heap_idx;
-        cin >> value;
-        heaps[heap_idx]->Insert(value, add_operation_cnt);
-        break;
-      case 1:
-        cin >> heap_idx;
-        cin >> heap2_idx;
-        heaps[heap2_idx]->Merge(*heaps[heap_idx]);
-        break;
-      case 2:
-        cin >> element_idx;
-        Delete(element_idx);
-        break;
-      case 3:
-        cin >> element_idx;
-        cin >> value;
-        Delete(element_idx);
-        heaps[elements[element_idx]->heap_idx]->Insert(value, element_idx);
-        break;
-      case 4:
-        cin >> heap_idx;
-        cout << heaps[heap_idx]->GetV() << '\n';
-        break;
-      case 5:
-        cin >> heap_idx;
-        heaps[heap_idx]->Extract();
-        break;
-    }
+    Read();
   }
   for (int i = 1; i < kLEN; i++) {
     delete elements[i];

@@ -26,42 +26,42 @@ struct Ship {
   Ship() {}
 };
 struct StackWithMin {
-  stack<pair<Ship*, Ship*>> stack;
-  ::stack<pair<Ship*, Ship*>> new_stack;
+  stack<pair<Ship*, Ship*>> main_stack;
+  stack<pair<Ship*, Ship*>> new_stack;
 
-  void Clear() { stack = new_stack; }
+  void Clear() { main_stack = new_stack; }
 
-  int Siize() const { return stack.size(); }
+  int Siize() const { return main_stack.size(); }
 
   void Push(Ship* ship) {
-    if (stack.empty()) {
-      stack.push({ship, ship});
+    if (main_stack.empty()) {
+      main_stack.push({ship, ship});
       return;
     }
     Ship* back_min = ship;
-    if (stack.top().second->value < ship->value) {
-      back_min = stack.top().second;
+    if (main_stack.top().second->value < ship->value) {
+      back_min = main_stack.top().second;
     }
-    stack.push({ship, back_min});
+    main_stack.push({ship, back_min});
   }
 
   void Pop() {
     Check();
-    stack.pop();
+    main_stack.pop();
   }
 
   Ship* Top() {
     Check();
-    return stack.top().first;
+    return main_stack.top().first;
   }
 
   Ship* MinE() {
     Check();
-    return stack.top().second;
+    return main_stack.top().second;
   }
 
   void Check() const {
-    if (stack.empty()) {
+    if (main_stack.empty()) {
       throw MyCustomException();
     }
   }
@@ -225,16 +225,11 @@ int main() {
   SubStringMinX(inp, ans1);
   SubStringMinY(ans1, ans2);
   SubStringMinZ(ans2, ans3);
-  vector<vector<vector<Ship>>> ans(
-       ixix, vector<vector<Ship>>(iyiy, vector<Ship>(iziz)));
-  for (int ix = ixix; ix >= 0; ix--) {
-    for (int iy = iyiy; iy >= 0; iy--) {
-      for (int iz = iziz; iz >= 0; iz--) {
-        Ship ship(ix, iy, iz, 0);
-        if (!(ship == ans3[ship.ixix][ship.iyiy][ship.iziz])) {
-          ship = ans3[ship.ixix][ship.iyiy][ship.iziz];
-        }
-        ans[ship.ixix][ship.iyiy][ship.iziz] = ship;
+  for (int ix = ixix - ll; ix >= 0; ix--) {
+    for (int iy = iyiy - ww; iy >= 0; iy--) {
+      for (int iz = iziz - hh; iz >= 0; iz--) {
+        Ship ship = ans3[ix][iy][iz];
+        ans3[ix][iy][iz] = ans3[ship.ixix][ship.iyiy][ship.iziz];
       }
     }
   }
@@ -244,10 +239,8 @@ int main() {
     int pix;
     int piy;
     int piz;
-    cin >> pix;
-    cin >> piy;
-    cin >> piz;
-    cout << ans[pix][piy][piz].ixix << " " << ans[pix][piy][piz].iyiy << " "
-         << ans[pix][piy][piz].iziz << '\n';
+    cin >> pix >> piy >> piz;
+    cout << ans3[pix][piy][piz].ixix << " " << ans3[pix][piy][piz].iyiy << " "
+         << ans3[pix][piy][piz].iziz << '\n';
   }
 }
